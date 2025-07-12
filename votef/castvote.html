@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cast Your Vote</title>
+    <style>
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background:
+             url('https://thelegalquorum.com/wp-content/uploads/2024/11/DALL%C2%B7E-2024-11-20-22.52.01-A-visually-compelling-landscape-cover-image-for-an-article-on-sedition-laws-in-India.-The-image-features-a-balanced-composition_-on-one-side-historic-1024x585.webp') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        .candidates {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .candidate {
+            display: flex;
+            align-items: center;
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            cursor: pointer;
+            transition: border 0.2s;
+        }
+        .candidate.selected {
+            border: 2px solid #007bff;
+            background: #e6f0ff;
+        }
+        .candidate img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 16px;
+        }
+        .candidate-details {
+            flex: 1;
+        }
+        .candidate-name {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .candidate-party {
+            color: #555;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 32px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 300px;
+        }
+        .modal-content img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 16px;
+        }
+        .modal-buttons {
+            margin-top: 24px;
+            display: flex;
+            justify-content: space-around;
+        }
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .btn-confirm {
+            background: #007bff;
+            color: #fff;
+        }
+        .btn-cancel {
+            background: #ccc;
+            color: #333;
+        }
+        .success-message {
+            color: green;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .candidate.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .loading {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Cast Your Vote</h2>
+        <div style="text-align:center; margin-bottom:16px;">
+            <span id="timer" style="font-size:1.1em; color:#d9534f; font-weight:bold;"></span>
+        </div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing your vote...</p>
+        </div>
+        <div class="candidates" id="candidatesList">
+            <!-- Candidates will be rendered here -->
+        </div>
+        <div class="success-message" id="successMsg"></div>
+        <div class="error-message" id="errorMsg"></div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <img id="modalProfile" src="" alt="Profile">
+            <div class="candidate-name" id="modalName"></div>
+            <div class="candidate-party" id="modalParty"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-confirm" id="confirmBtn">Confirm</button>
+                <button class="btn btn-cancel" id="cancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+
+        // Your web app's Firebase configuration - Replace with your own Firebase credentials
+        const firebaseConfig = {
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+            projectId: "YOUR_FIREBASE_PROJECT_ID",
+            storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_FIREBASE_APP_ID",
+            measurementId: "YOUR_MEASUREMENT_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // Fetch candidates from backend
+        let candidates = [];
+        let voterId = null;
+
+        const candidatesList = document.getElementById('candidatesList');
+        const confirmModal = document.getElementById('confirmModal');
+        const modalName = document.getElementById('modalName');
+        const modalParty = document.getElementById('modalParty');
+        const modalProfile = document.getElementById('modalProfile');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const successMsg = document.getElementById('successMsg');
+        const errorMsg = document.getElementById('errorMsg');
+        const loading = document.getElementById('loading');
+
+        let selectedCandidate = null;
+        let timerInterval = null;
+        let timeLeft = 60; // seconds
+
+        const DEFAULT_AVATAR = 'https://img.freepik.com/premium-vector/male-face-avatar-icon-set-flat-design-social-media-profiles_1281173-3806.jpg?semt=ais_hybrid&w=740';
+
+        // Party color utility
+        const PARTY_COLORS = [
+            '#007bff', '#dc3545', '#28a745', '#ffc107', '#6f42c1', '#17a2b8', '#fd7e14', '#20c997', '#343a40', '#6c757d'
+        ];
+        const partyColorMap = {};
+        function getPartyColor(party) {
+            if (!party) return '#bbb';
+            if (!partyColorMap[party]) {
+                partyColorMap[party] = PARTY_COLORS[Object.keys(partyColorMap).length % PARTY_COLORS.length];
+            }
+            return partyColorMap[party];
+        }
+
+        // Timer logic
+        function startTimer() {
+            const timerDisplay = document.getElementById('timer');
+            timerDisplay.textContent = formatTime(timeLeft);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft >= 0) {
+                    timerDisplay.textContent = formatTime(timeLeft);
+                }
+                if (timeLeft === 0) {
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = 'Time ended';
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                }
+            }, 1000);
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `Time left: ${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // Prompt for voter ID on page load
+        function getVoterId() {
+            // Try to get voter ID from current user data first
+            const user = localStorage.getItem('currentUser');
+            if (user) {
+                try {
+                    const userData = JSON.parse(user);
+                    voterId = userData.voterId || userData.id;
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
+            }
+            
+            // Fallback to localStorage or prompt
+            if (!voterId) {
+                voterId = localStorage.getItem('voterId');
+                if (!voterId) {
+                    voterId = prompt('Please enter your Voter ID:');
+                    if (voterId) {
+                        localStorage.setItem('voterId', voterId);
+                    } else {
+                        alert('Voter ID is required to vote.');
+                        window.location.href = 'dashboard.html';
+                    }
+                }
+            }
+            
+            console.log('Using voter ID:', voterId);
+        }
+
+        // Check if user has already voted using Firestore
+        async function checkIfAlreadyVoted() {
+            if (!voterId) return false;
+
+            try {
+                // Check in Firestore first
+                const voterDocRef = doc(db, "voters", voterId);
+                const voterDoc = await getDoc(voterDocRef);
+                
+                if (voterDoc.exists()) {
+                    const voterData = voterDoc.data();
+                    if (voterData.votingStatus && voterData.votingStatus.hasVoted) {
+                        alert('You have already cast your vote!');
+                        window.location.href = 'dashboard.html';
+                        return true;
+                    }
+                }
+
+                // Fallback to backend API
+                const response = await fetch(`http://localhost:3002/votes/status/${voterId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.hasVoted) {
+                        // Update Firestore with voting status
+                        await updateVotingStatusInFirestore(true, data.voteDetails);
+                        alert('You have already cast your vote!');
+                        window.location.href = 'dashboard.html';
+                        return true;
+                    }
+                }
+            } catch (err) {
+                console.warn('Could not check voting status:', err.message);
+                // Fallback to localStorage
+                const hasVoted = localStorage.getItem('hasVoted') === 'true';
+                if (hasVoted) {
+                    alert('You have already cast your vote!');
+                    window.location.href = 'dashboard.html';
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Update voting status in Firestore
+        async function updateVotingStatusInFirestore(hasVoted, voteDetails = null) {
+            try {
+                const voterDocRef = doc(db, "voters", voterId);
+                const voterData = {
+                    voterId: voterId,
+                    votingStatus: {
+                        hasVoted: hasVoted,
+                        lastUpdated: new Date().toISOString(),
+                        timestamp: new Date().toISOString()
+                    }
+                };
+
+                if (voteDetails) {
+                    voterData.votingStatus.voteDetails = voteDetails;
+                }
+
+                await setDoc(voterDocRef, voterData, { merge: true });
+                console.log('Voting status updated in Firestore');
+            } catch (error) {
+                console.error('Error updating voting status in Firestore:', error);
+            }
+        }
+
+        // Fetch candidates from Firestore
+        async function fetchCandidates() {
+            try {
+                // Try backend API first
+                const response = await fetch('http://localhost:3002/candidates');
+                if (response.ok) {
+                    let backendCandidates;
+                    try {
+                        backendCandidates = await response.json();
+                    } catch (jsonErr) {
+                        throw new Error('Invalid JSON from backend candidates API.');
+                    }
+                    if (backendCandidates && backendCandidates.length > 0) {
+                        candidates = backendCandidates;
+                        renderCandidates();
+                        console.log('Loaded candidates from backend:', candidates);
+                        return;
+                    }
+                }
+                // Fallback to Firestore if backend fails or is empty
+                const candidatesSnapshot = await getDocs(collection(db, "candidates"));
+                if (!candidatesSnapshot.empty) {
+                    candidates = candidatesSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    renderCandidates();
+                    console.log('Loaded candidates from Firestore:', candidates);
+                    return;
+                }
+                throw new Error('No candidates found in backend or Firestore.');
+            } catch (err) {
+                errorMsg.textContent = 'Could not load candidates: ' + err.message;
+                console.error('Candidate fetch error:', err);
+            }
+        }
+
+        // Render candidates
+        function renderCandidates() {
+            candidatesList.innerHTML = '';
+            candidates.forEach(candidate => {
+                const div = document.createElement('div');
+                div.className = 'candidate';
+                div.innerHTML = `
+                    <img src="${candidate.photo || candidate.profile || DEFAULT_AVATAR}" alt="${candidate.name}">
+                    <div class="candidate-details">
+                        <div class="candidate-name">${candidate.name}</div>
+                        <div class="candidate-party">${candidate.party}</div>
+                    </div>
+                `;
+                div.onclick = () => onCandidateClick(candidate, div);
+                candidatesList.appendChild(div);
+            });
+        }
+
+        // Handle candidate click
+        function onCandidateClick(candidate, div) {
+            // Deselect all
+            document.querySelectorAll('.candidate').forEach(el => el.classList.remove('selected'));
+            // Select current
+            div.classList.add('selected');
+            selectedCandidate = candidate;
+            showConfirmation(candidate);
+        }
+
+        // Show confirmation modal
+        function showConfirmation(candidate) {
+            modalName.textContent = candidate.name;
+            modalParty.textContent = candidate.party;
+            modalProfile.src = candidate.photo || candidate.profile || DEFAULT_AVATAR;
+            confirmModal.style.display = 'flex';
+        }
+
+        // Hide modal
+        function hideModal() {
+            confirmModal.style.display = 'none';
+        }
+
+        // Disable all voting actions after a successful vote
+        function disableVoting() {
+            document.querySelectorAll('.candidate').forEach(el => {
+                el.classList.add('disabled');
+                el.onclick = null;
+            });
+            confirmBtn.disabled = true;
+            cancelBtn.disabled = true;
+        }
+
+        // Send vote to backend and update Firestore
+        async function submitVote(candidate) {
+            loading.style.display = 'block';
+            
+            try {
+                // Send vote to backend
+                const response = await fetch('http://localhost:3002/votes/cast', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        candidateName: candidate.name,
+                        voterId: voterId
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Update Firestore with voting status
+                    const voteDetails = {
+                        candidateName: candidate.name,
+                        timestamp: new Date().toISOString(),
+                        electionId: 'general-election-2024',
+                        pollingStation: 'online',
+                        deviceInfo: navigator.userAgent,
+                        ipAddress: 'unknown' // Would be set by backend in real implementation
+                    };
+
+                    await updateVotingStatusInFirestore(true, voteDetails);
+                    
+                    successMsg.textContent = result.message || 'Your vote has been cast successfully!';
+                    errorMsg.textContent = '';
+                    
+                    // Mark vote as cast in localStorage
+                    localStorage.setItem('hasVoted', 'true');
+                    localStorage.setItem('voteCasted', 'true');
+                    
+                    // Disable voting interface
+                    disableVoting();
+                    
+                    // Redirect to dashboard after delay
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 2000);
+                } else {
+                    const errData = await response.json();
+                    throw new Error(errData.error || 'Failed to cast vote.');
+                }
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                successMsg.textContent = '';
+                console.error('Vote submission error:', err);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Modal button events
+        confirmBtn.onclick = () => {
+            hideModal();
+            if (selectedCandidate) {
+                submitVote(selectedCandidate);
+            }
+        };
+        cancelBtn.onclick = () => {
+            hideModal();
+            // Deselect all
+            document.querySelectorAll('.candidate').forEach(el => el.classList.remove('selected'));
+            selectedCandidate = null;
+        };
+
+        // Initial load
+        async function initialize() {
+            getVoterId();
+            
+            // Check if already voted before proceeding
+            const alreadyVoted = await checkIfAlreadyVoted();
+            if (!alreadyVoted) {
+                fetchCandidates();
+                startTimer();
+            }
+        }
+
+        initialize();
+    </script>
+</body>
+</html>

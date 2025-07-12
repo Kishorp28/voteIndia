@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voter Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --white: #ffffff;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --border-radius: 0.5rem;
+            --border-radius-lg: 0.75rem;
+            --border-radius-xl: 1rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--gray-600);
+            font-size: 1.1rem;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .profile-container {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            border: 4px solid var(--white);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .profile-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-role {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .profile-content {
+            padding: 2rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .info-card {
+            background: var(--gray-100);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-lg);
+            border-left: 4px solid var(--primary);
+        }
+
+        .info-card h3 {
+            color: var(--gray-900);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .info-field:last-child {
+            border-bottom: none;
+        }
+
+        .field-label {
+            font-weight: 500;
+            color: var(--gray-700);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .field-value {
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            background: var(--success);
+            color: var(--white);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-badge.inactive {
+            background: var(--danger);
+        }
+
+        .edit-btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .edit-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-600);
+        }
+
+        .loading i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 3rem;
+            color: var(--danger);
+        }
+
+        .error i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Edit Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 99999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 450px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 100000;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: #2563eb;
+            color: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 5px rgba(37, 99, 235, 0.3);
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        .success-message {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            background: #dc3545;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .profile-header {
+                padding: 2rem 1rem;
+            }
+
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+
+            .profile-name {
+                font-size: 1.5rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .back-btn {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin-bottom: 1rem;
+                justify-content: center;
+            }
+
+            /* Modal responsive design */
+            .modal-content {
+                width: 95%;
+                margin: 20px auto;
+                max-width: none;
+                max-height: 90vh;
+            }
+
+            .modal-header {
+                padding: 10px 15px;
+                margin: -20px -20px 15px -20px;
+            }
+
+            .form-group {
+                margin-bottom: 12px;
+            }
+
+            .form-group input {
+                padding: 8px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .modal-footer {
+                margin-top: 15px;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                font-size: 14px;
+                margin-left: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="dashboard.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        Back to Dashboard
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <h1>Voter Profile</h1>
+            <p>Your personal information and account details</p>
+        </div>
+
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-name" id="profileName">Loading...</div>
+                <div class="profile-role">Registered Voter</div>
+            </div>
+
+            <div class="profile-content">
+                <div class="info-grid" id="profileInfo">
+                    <div class="loading">
+                        <i class="fas fa-spinner"></i>
+                        <h3>Loading Profile...</h3>
+                    </div>
+                </div>
+
+                <button class="edit-btn" onclick="editProfile()">
+                    <i class="fas fa-edit"></i>
+                    Edit Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Profile</h2>
+                <button class="close" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="aadhaar">Aadhaar Number</label>
+                    <input type="text" id="aadhaar" name="aadhaar" required>
+                </div>
+                <div class="form-group">
+                    <label for="mobile">Mobile Number</label>
+                    <input type="text" id="mobile" name="mobile" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email">
+                </div>
+                <div class="form-group">
+                    <label for="state">State</label>
+                    <input type="text" id="state" name="state" required>
+                </div>
+                <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" name="city" required>
+                </div>
+                <div class="form-group">
+                    <label for="constituency">Constituency</label>
+                    <input type="text" id="constituency" name="constituency">
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script>
+        // Firebase config - Replace with your own Firebase credentials
+        const firebaseConfig = {
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+            projectId: "YOUR_FIREBASE_PROJECT_ID",
+            storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_FIREBASE_APP_ID",
+            measurementId: "YOUR_MEASUREMENT_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Get voterId from localStorage
+        const voterId = localStorage.getItem('voterId');
+
+        let currentVoterData = null;
+        let votingStatus = null;
+
+        // Check voting status from Firestore
+        async function checkVotingStatus() {
+            try {
+                if (!voterId) return false;
+
+                // Check in Firestore for voting status
+                const voterDocRef = db.collection('voters').doc(voterId);
+                const voterDoc = await voterDocRef.get();
+                
+                if (voterDoc.exists) {
+                    const voterData = voterDoc.data();
+                    console.log('Firestore voter data:', voterData);
+                    
+                    if (voterData.votingStatus && voterData.votingStatus.hasVoted === true) {
+                        console.log('Voter has already voted according to Firestore');
+                        votingStatus = voterData.votingStatus;
+                        return true;
+                    }
+                }
+
+                // Fallback to backend API if Firestore doesn't have voting status
+                console.log('No voting status in Firestore, checking backend API');
+                const response = await fetch(`http://localhost:3002/votes/status/${voterId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.hasVoted) {
+                        votingStatus = {
+                            hasVoted: true,
+                            voteDetails: data.voteDetails
+                        };
+                        return true;
+                    }
+                }
+
+                // Fallback to localStorage
+                const hasVoted = localStorage.getItem('hasVoted') === 'true';
+                if (hasVoted) {
+                    votingStatus = {
+                        hasVoted: true,
+                        voteDetails: null
+                    };
+                    return true;
+                }
+
+                return false;
+            } catch (error) {
+                console.warn('Voting status check failed:', error.message);
+                // Fallback to localStorage
+                const hasVoted = localStorage.getItem('hasVoted') === 'true';
+                if (hasVoted) {
+                    votingStatus = {
+                        hasVoted: true,
+                        voteDetails: null
+                    };
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        function loadProfile() {
+            if (!voterId) {
+                document.getElementById('profileInfo').innerHTML = `
+                    <div class="error">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>No Voter ID Found</h3>
+                        <p>Please log in again to view your profile.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            db.collection('voters').where('voterId', '==', voterId).limit(1).get()
+                .then(snapshot => {
+                    if (snapshot.empty) {
+                        document.getElementById('profileInfo').innerHTML = `
+                            <div class="error">
+                                <i class="fas fa-user-slash"></i>
+                                <h3>Voter Not Found</h3>
+                                <p>No voter record found with the provided ID.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const data = snapshot.docs[0].data();
+                    currentVoterData = data;
+                    
+                    // Set profile avatar with initials
+                    const initials = data.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                    document.getElementById('profileAvatar').innerHTML = initials;
+                    
+                    // Set profile name
+                    document.getElementById('profileName').textContent = data.name;
+
+                    // Check voting status and render profile
+                    checkVotingStatus().then(hasVoted => {
+                        renderProfileInfo(data, hasVoted);
+                    });
+                })
+                .catch((err) => {
+                    console.error('Error fetching voter details:', err);
+                    document.getElementById('profileInfo').innerHTML = `
+                        <div class="error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h3>Error Loading Profile</h3>
+                            <p>Unable to load your profile information. Please try again later.</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function renderProfileInfo(data, hasVoted) {
+            // Get voting timestamp if available
+            let votingTimestamp = '';
+            if (votingStatus && votingStatus.voteDetails && votingStatus.voteDetails.timestamp) {
+                votingTimestamp = new Date(votingStatus.voteDetails.timestamp).toLocaleString();
+            }
+
+            document.getElementById('profileInfo').innerHTML = `
+                <div class="info-card">
+                    <h3>
+                        <i class="fas fa-user"></i>
+                        Personal Information
+                    </h3>
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-id-card"></i>
+                            Full Name
+                        </span>
+                        <span class="field-value">${data.name}</span>
+                    </div>
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-fingerprint"></i>
+                            Voter ID
+                        </span>
+                        <span class="field-value">${data.voterId}</span>
+                    </div>
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-id-badge"></i>
+                            Aadhaar Number
+                        </span>
+                        <span class="field-value">${data.aadhaar}</span>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3>
+                        <i class="fas fa-phone"></i>
+                        Contact Information
+                    </h3>
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-mobile-alt"></i>
+                            Mobile Number
+                        </span>
+                        <span class="field-value">${data.mobile}</span>
+                    </div>
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-envelope"></i>
+                            Email Address
+                        </span>
+                        <span class="field-value">${data.email || 'Not provided'}</span>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3>
+                        <i class="fas fa-map-marker-alt"></i>
+                        Location Information
+                    </h3>
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-flag"></i>
+                            State
+                        </span>
+                        <span class="field-value">${data.state}</span>
+                    </div>
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-city"></i>
+                            City
+                        </span>
+                        <span class="field-value">${data.city}</span>
+                    </div>
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-map"></i>
+                            Constituency
+                        </span>
+                        <span class="field-value">${data.constituency || 'Not specified'}</span>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3>
+                        <i class="fas fa-vote-yea"></i>
+                        Voting Status
+                    </h3>
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-check-circle"></i>
+                            Account Status
+                        </span>
+                        <span class="status-badge">Active</span>
+                    </div>
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-vote-yea"></i>
+                            Voting Status
+                        </span>
+                        <span class="status-badge ${hasVoted ? '' : 'inactive'}">${hasVoted ? 'Vote Casted ' : 'Not Voted'}</span>
+                    </div>
+                    ${hasVoted && votingTimestamp ? `
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            Voting Date
+                        </span>
+                        <span class="field-value">${votingTimestamp}</span>
+                    </div>
+                    ` : ''}
+                    <div class="info-field">
+                        <span class="field-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            Registration Date
+                        </span>
+                        <span class="field-value">${data.registrationDate || 'Not available'}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function editProfile() {
+            console.log('Edit profile clicked');
+            
+            if (!voterId) {
+                alert('No voter ID found. Please log in again.');
+                return;
+            }
+            
+            if (!currentVoterData) {
+                alert('Please wait for profile data to load before editing.');
+                return;
+            }
+
+            // Populate form with current data
+            document.getElementById('name').value = currentVoterData.name || '';
+            document.getElementById('aadhaar').value = currentVoterData.aadhaar || '';
+            document.getElementById('mobile').value = currentVoterData.mobile || '';
+            document.getElementById('email').value = currentVoterData.email || '';
+            document.getElementById('state').value = currentVoterData.state || '';
+            document.getElementById('city').value = currentVoterData.city || '';
+            document.getElementById('constituency').value = currentVoterData.constituency || '';
+
+            // Show modal
+            document.getElementById('editModal').style.display = 'block';
+            console.log('Modal should be visible now');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+            console.log('Modal closed');
+        }
+
+        function saveProfile() {
+            console.log('Save profile clicked');
+            
+            // Get form data
+            const name = document.getElementById('name').value.trim();
+            const aadhaar = document.getElementById('aadhaar').value.trim();
+            const mobile = document.getElementById('mobile').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const constituency = document.getElementById('constituency').value.trim();
+
+            // Validation
+            if (!name || !mobile || !state || !city) {
+                alert('Please fill in all required fields (Name, Mobile, State, City)');
+                return;
+            }
+
+            if (!/^\d{10}$/.test(mobile)) {
+                alert('Please enter a valid 10-digit mobile number');
+                return;
+            }
+
+            if (aadhaar && !/^\d{12}$/.test(aadhaar)) {
+                alert('Please enter a valid 12-digit Aadhaar number');
+                return;
+            }
+
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert('Please enter a valid email address');
+                return;
+            }
+
+            // Prepare data for update
+            const updateData = {
+                name: name,
+                aadhaar: aadhaar,
+                mobile: mobile,
+                email: email,
+                state: state,
+                city: city,
+                constituency: constituency
+            };
+
+            console.log('Updating with data:', updateData);
+
+            // Find and update the voter document
+            db.collection('voters').where('voterId', '==', voterId).limit(1).get()
+                .then(snapshot => {
+                    if (snapshot.empty) {
+                        throw new Error('Voter not found');
+                    }
+                    
+                    const docId = snapshot.docs[0].id;
+                    console.log('Found document ID:', docId);
+                    
+                    return db.collection('voters').doc(docId).update(updateData);
+                })
+                .then(() => {
+                    console.log('Profile updated successfully');
+                    
+                    // Update local data
+                    currentVoterData = { ...currentVoterData, ...updateData };
+                    
+                    // Show success message
+                    alert('Profile updated successfully!');
+                    
+                    // Close modal and reload profile
+                    closeModal();
+                    loadProfile();
+                })
+                .catch((error) => {
+                    console.error('Error updating profile:', error);
+                    alert('Error updating profile: ' + error.message);
+                });
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Load profile when page loads
+        window.onload = function() {
+            loadProfile();
+        };
+    </script>
+</body>
+</html> 

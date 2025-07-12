@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Election Results</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --white: #ffffff;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-600: #475569;
+            --gray-900: #0f172a;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 0.5rem;
+            --border-radius-lg: 0.75rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--gray-600);
+            font-size: 1.1rem;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .results-container {
+            background: var(--white);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 2rem;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        .results-header h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .refresh-btn {
+            background: var(--success);
+            color: var(--white);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--gray-100);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-lg);
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .candidate-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .candidate-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: var(--gray-100);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .candidate-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow);
+        }
+
+        .candidate-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 1rem;
+            border: 2px solid var(--primary);
+        }
+
+        .candidate-info {
+            flex: 1;
+        }
+
+        .candidate-name {
+            font-weight: 600;
+            color: var(--gray-900);
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .candidate-party {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        .candidate-votes {
+            font-weight: 700;
+            color: var(--success);
+            font-size: 1.2rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-600);
+        }
+
+        .loading i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .results-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .back-btn {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin-bottom: 1rem;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="dashboard.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+        Back to Dashboard
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <h1>Election Results</h1>
+            <p>Live election results and voting statistics</p>
+        </div>
+
+        <div class="results-container">
+            <div class="results-header">
+                <h2>Current Results</h2>
+                <button class="refresh-btn" onclick="loadResults()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Results
+                </button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalVotes">0</div>
+                    <div class="stat-label">Total Votes Cast</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCandidates">0</div>
+                    <div class="stat-label">Candidates</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="leadingCandidate">-</div>
+                    <div class="stat-label">Leading Candidate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="turnoutPercentage">0%</div>
+                    <div class="stat-label">Voter Turnout</div>
+                </div>
+            </div>
+
+            <div id="resultsContent">
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <h3>Loading Results...</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadResults() {
+            const resultsContent = document.getElementById('resultsContent');
+            try {
+                // Show loading
+                resultsContent.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-spinner"></i>
+                        <h3>Loading Results...</h3>
+                    </div>
+                `;
+
+                // Fetch real data from backend
+                const [candidatesResponse, votesResponse] = await Promise.all([
+                    fetch('http://localhost:3002/candidates'),
+                    fetch('http://localhost:3002/votes/all')
+                ]);
+
+                if (!candidatesResponse.ok) {
+                    throw new Error(`Candidates API error: ${candidatesResponse.status}`);
+                }
+                if (!votesResponse.ok) {
+                    throw new Error(`Votes API error: ${votesResponse.status}`);
+                }
+
+                let candidates, votes;
+                try {
+                    candidates = await candidatesResponse.json();
+                } catch (jsonErr) {
+                    throw new Error('Invalid JSON from candidates API.');
+                }
+                try {
+                    votes = await votesResponse.json();
+                } catch (jsonErr) {
+                    throw new Error('Invalid JSON from votes API.');
+                }
+
+                console.log('Real election data:', { candidates, votes });
+
+                // Count votes per candidate
+                const voteCounts = {};
+                votes.forEach(v => {
+                    voteCounts[v.candidateName] = (voteCounts[v.candidateName] || 0) + 1;
+                });
+
+                // Calculate total votes
+                const totalVotes = Object.values(voteCounts).reduce((sum, count) => sum + count, 0);
+
+                // Update statistics
+                document.getElementById('totalVotes').textContent = totalVotes;
+                document.getElementById('totalCandidates').textContent = candidates.length;
+
+                // Find leading candidate
+                let leadingCandidate = 'No votes yet';
+                let maxVotes = 0;
+                Object.entries(voteCounts).forEach(([name, count]) => {
+                    if (count > maxVotes) {
+                        maxVotes = count;
+                        leadingCandidate = name;
+                    }
+                });
+
+                document.getElementById('leadingCandidate').textContent = leadingCandidate;
+                
+                // Calculate voter turnout (use votes as registered voters for now)
+                const turnoutPercentage = totalVotes > 0 ? Math.round((totalVotes / totalVotes) * 100) : 0;
+                document.getElementById('turnoutPercentage').textContent = turnoutPercentage + '%';
+
+                // Sort candidates by vote count
+                const sortedCandidates = candidates.map(candidate => ({
+                    ...candidate,
+                    votes: voteCounts[candidate.name] || 0
+                })).sort((a, b) => b.votes - a.votes);
+
+                // Display results
+                if (sortedCandidates.length > 0) {
+                    let resultsHTML = '<div class="candidate-list">';
+                    
+                    sortedCandidates.forEach(candidate => {
+                        const percentage = totalVotes > 0 ? Math.round((candidate.votes / totalVotes) * 100) : 0;
+                        resultsHTML += `
+                            <div class="candidate-item">
+                                <img src="${candidate.photo || 'https://via.placeholder.com/60x60?text=' + candidate.name.split(' ').map(n => n[0]).join('')}" 
+                                     alt="${candidate.name}" 
+                                     class="candidate-photo"
+                                     onerror="this.src='https://via.placeholder.com/60x60?text=${candidate.name.split(' ').map(n => n[0]).join('')}'">
+                                <div class="candidate-info">
+                                    <div class="candidate-name">${candidate.name}</div>
+                                    <div class="candidate-party">${candidate.party || 'Independent'}</div>
+                                </div>
+                                <div class="candidate-votes">${candidate.votes} votes (${percentage}%)</div>
+                            </div>
+                        `;
+                    });
+
+                    resultsHTML += '</div>';
+                    resultsContent.innerHTML = resultsHTML;
+                } else {
+                    resultsContent.innerHTML = `
+                        <div class="loading">
+                            <i class="fas fa-user-tie"></i>
+                            <h3>No Candidates Available</h3>
+                            <p>Candidates will be listed here once they are registered.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading results:', error);
+                resultsContent.innerHTML = `
+                    <div class="loading">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Error Loading Results</h3>
+                        <p>Unable to load election results. Please try again later.</p>
+                        <p style="font-size: 0.9rem; color: #666;">Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load results when page loads
+        window.onload = function() {
+            loadResults();
+        };
+    </script>
+</body>
+</html> 

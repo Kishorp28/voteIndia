@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voter Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('https://t4.ftcdn.net/jpg/07/86/39/05/360_F_786390570_CVW8NjAATYC2lgTZJbnxIX0au1sfp8DE.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .register-container {
+            background: #fff;
+            padding: 2rem 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            width: 350px;
+            text-align: center;
+        }
+        .register-container h2 {
+            margin-bottom: 1.5rem;
+        }
+        .register-container input,
+        .register-container select {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .register-container button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .success-message {
+            color: #28a745;
+            margin-top: 1rem;
+        }
+    </style>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Voter Registration</h2>
+        <form id="registerForm">
+            <input type="text" id="name" placeholder="Name" required>
+            <input type="text" id="aadhaar" placeholder="Aadhaar Number (12 digits)" maxlength="12" pattern="\d{12}" required>
+            <input type="text" id="mobile" placeholder="Mobile Number (10 digits)" maxlength="10" pattern="\d{10}" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <select id="state" required>
+                <option value="">Select State</option>
+            </select>
+            <select id="city" required>
+                <option value="">Select City</option>
+            </select>
+            <button type="submit">Register</button>
+            <br>
+            <br></br>
+            <a href="voter_login.html">Login</a>
+        </form>
+        <div class="success-message" id="successMessage"></div>
+    </div>
+    <!-- Modal for Voter ID -->
+    <div id="voterIdModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);justify-content:center;align-items:center;z-index:1000;">
+        <div style="background:#fff;padding:2rem 2.5rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.2);text-align:center;min-width:300px;">
+            <h3>Registration Successful!</h3>
+            <p>Your Voter ID is:</p>
+            <div id="modalVoterId" style="font-size:1.5rem;font-weight:bold;margin:1rem 0;"></div>
+            <button id="okBtn" style="padding:0.5rem 1.5rem;background:#007bff;color:#fff;border:none;border-radius:4px;font-size:1rem;cursor:pointer;">OK</button>
+        </div>
+    </div>
+    <script>
+        // Firebase config - Replace with your own Firebase credentials
+        const firebaseConfig = {
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+            projectId: "YOUR_FIREBASE_PROJECT_ID",
+            storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_FIREBASE_APP_ID",
+            measurementId: "YOUR_MEASUREMENT_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Indian states and cities (sample, add more as needed)
+        const stateCityMap = {
+            "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli"],
+            "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik"],
+            "Karnataka": ["Bengaluru", "Mysuru", "Mangaluru", "Hubli"],
+            "Delhi": ["New Delhi", "Dwarka", "Rohini", "Saket"],
+            // ... add all Indian states and major cities
+        };
+        const stateSelect = document.getElementById('state');
+        const citySelect = document.getElementById('city');
+        for (const state in stateCityMap) {
+            const option = document.createElement('option');
+            option.value = state;
+            option.textContent = state;
+            stateSelect.appendChild(option);
+        }
+        stateSelect.addEventListener('change', function() {
+            citySelect.innerHTML = '<option value="">Select City</option>';
+            const cities = stateCityMap[this.value] || [];
+            cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+        });
+
+        // Generate unique Voter ID
+        function generateVoterID() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let id = 'TN';
+            for (let i = 0; i < 9; i++) {
+                id += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return id;
+        }
+
+        // Twilio API call (requires backend proxy for security)
+        async function sendVoterIdSMS(mobile, voterId) {
+            try {
+                const response = await fetch('http://localhost:3002/send-sms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile, voterId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('SMS response:', data);
+                    
+                    // Show appropriate message based on SMS method
+                    if (data.method === 'mock') {
+                        console.log('Mock SMS used:', data.message);
+                        // For mock SMS, we still show success but inform user
+                        alert(`Registration successful! Your Voter ID is: ${voterId}\n\nNote: SMS was simulated (Twilio not configured for development).`);
+                    } else {
+                        console.log('Real SMS sent via Twilio');
+                        alert(`Registration successful! Your Voter ID is: ${voterId}\n\nSMS has been sent to your mobile number.`);
+                    }
+                    return true;
+                } else {
+                    throw new Error(data.error || 'SMS failed');
+                }
+            } catch (err) {
+                console.error('SMS error:', err);
+                alert(`Registration successful! Your Voter ID is: ${voterId}\n\nNote: SMS could not be sent: ${err.message}`);
+                return false;
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const aadhaar = document.getElementById('aadhaar').value.trim();
+            const mobile = document.getElementById('mobile').value.trim();
+            const password = document.getElementById('password').value;
+            const state = stateSelect.value;
+            const city = citySelect.value;
+            
+            if (!/^\d{12}$/.test(aadhaar)) {
+                alert('Aadhaar number must be 12 digits.');
+                return;
+            }
+            if (!/^\d{10}$/.test(mobile)) {
+                alert('Mobile number must be 10 digits.');
+                return;
+            }
+            
+            const voterId = generateVoterID();
+            
+            try {
+                // Save to Firebase
+                await db.collection('voters').add({
+                    name, aadhaar, mobile, password, state, city, voterId
+                });
+                
+                console.log('Voter registered successfully in Firebase');
+                
+                // Try to send SMS (but don't fail registration if SMS fails)
+                try {
+                    await sendVoterIdSMS(mobile, voterId);
+                } catch (smsError) {
+                    console.warn('SMS failed but registration succeeded:', smsError);
+                }
+                
+                // Show modal with Voter ID regardless of SMS status
+                document.getElementById('modalVoterId').textContent = voterId;
+                document.getElementById('voterIdModal').style.display = 'flex';
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('Registration failed: ' + error.message);
+            }
+        });
+        document.getElementById('okBtn').onclick = function() {
+            window.location.href = 'voter_login.html';
+        };
+    </script>
+</body>
+</html> 

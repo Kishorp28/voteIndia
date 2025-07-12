@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voter Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #007bff;
+            --danger: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;    
+            --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: #fff;
+            --border: #e0e0e0;
+            --sidebar-width: 250px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #fff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-header p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .sidebar-nav {
+            padding: 1.5rem 0;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: #f8f9fa;
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+            border-left-color: white;
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .nav-link span {
+            font-weight: 500;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.primary { background: var(--primary); }
+        .stat-icon.success { background: var(--success); }
+        .stat-icon.warning { background: var(--warning); }
+        .stat-icon.info { background: var(--info); }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .card-icon.primary { background: var(--primary); }
+        .card-icon.success { background: var(--success); }
+        .card-icon.warning { background: var(--warning); }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .card-content {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.success {
+            background: var(--success);
+        }
+
+        .action-btn.success:hover {
+            background: #1e7e34;
+        }
+
+        .action-btn.warning {
+            background: var(--warning);
+            color: #333;
+        }
+
+        .action-btn.warning:hover {
+            background: #e0a800;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Mobile Toggle */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 0.75rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-toggle {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Vote</h2>
+                <p>Voting Platform</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="#" class="nav-link active" onclick="showSection('dashboard')">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="result.html" class="nav-link">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Results</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        <span>My Profile</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="https://voters.eci.gov.in/" target="_blank" class="nav-link">
+                        <i class="fas fa-question-circle"></i>
+                        <span>ECI Help</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboard-section">
+                <div class="page-header">
+                    <h1 class="page-title">Welcome to Vote</h1>
+                    <p class="page-subtitle">Your secure and transparent voting platform</p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-number" id="totalVoters">0</div>
+                        <div class="stat-label">Total Voters</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-vote-yea"></i>
+                        </div>
+                        <div class="stat-number" id="totalVotes">0</div>
+                        <div class="stat-label">Votes Cast</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" id="votingStatusIcon" style="background: #ffc107;">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-number" id="votingStatusNumber" style="color: #ffc107;">Ready</div>
+                        <div class="stat-label" id="votingStatusLabel">Voting Status</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="stat-number" id="totalCandidates">0</div>
+                        <div class="stat-label">Candidates</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon info">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-number" id="voterTurnout">0%</div>
+                        <div class="stat-label">Voter Turnout</div>
+                    </div>
+                    
+                </div>
+
+                <!-- Action Cards -->
+                <div class="content-grid">
+                    <div class="card" style="background: white; color: #333; border: 2px solid;">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: #28a745;">
+                                <i class="fas fa-vote-yea"></i>
+                            </div>
+                            <h3 class="card-title" style="color: black;">Cast Your Vote</h3>
+                        </div>
+                        <div class="card-content" style="color: #666;">
+                            <p>Exercise your democratic right by casting your vote for your preferred candidate. Make your voice heard!</p>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: #f8f9fa; border-radius: 5px; border: 1px solid #dee2e6;">
+                                <div id="voteStatusIcon" style="width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: white;"></div>
+                                <span id="voteStatusText" style="font-size: 0.9rem; font-weight: 500; color: #333;"></span>
+                            </div>
+                            <a href="castvote.html" class="action-btn" id="castVoteBtn" style="background: #28a745; color: white; border: 2px solid #28a745;">
+                                <i class="fas fa-arrow-right"></i>
+                                Vote Now
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon warning">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3 class="card-title">View Results</h3>
+                        </div>
+                        <div class="card-content">
+                            <p>Check the current election results and see how the voting is progressing in real-time.</p>
+                        </div>
+                        <a href="result.html" class="action-btn warning">
+                            <i class="fas fa-arrow-right"></i>
+                            View Results
+                        </a>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon primary">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h3 class="card-title">My Profile</h3>
+                        </div>
+                        <div class="card-content">
+                            <p>Update your profile information and view your voting history and preferences.</p>
+                        </div>
+                        <a href="profile.html" class="action-btn">
+                            <i class="fas fa-arrow-right"></i>
+                            View Profile
+                        </a>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon info">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                            <h3 class="card-title">Voter Help</h3>
+                        </div>
+                        <div class="card-content">
+                            <p>Get help with voting process, check your voter ID status, and access official ECI resources.</p>
+                        </div>
+                        <a href="https://voters.eci.gov.in/" target="_blank" class="action-btn" style="background: var(--info);">
+                            <i class="fas fa-external-link-alt"></i>
+                            ECI Portal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        function checkAuth() {
+            const user = localStorage.getItem('currentUser');
+            if (!user) {
+                window.location.href = 'voter_login.html';
+                return;
+            }
+            
+            try {
+                const userData = JSON.parse(user);
+                // Update sidebar header with user info
+                const sidebarHeader = document.querySelector('.sidebar-header p');
+                sidebarHeader.textContent = `Welcome, ${userData.name || 'Voter'}`;
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Fetch statistics from backend
+                const response = await fetch('http://localhost:3002/dashboard-stats');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch dashboard stats');
+                }
+                // Try to parse JSON safely
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonErr) {
+                    throw new Error('Invalid JSON response from backend.');
+                }
+                document.getElementById('totalVoters').textContent = data.totalVoters || 0;
+                document.getElementById('totalVotes').textContent = data.totalVotes || 0;
+                document.getElementById('totalCandidates').textContent = data.totalCandidates || 0;
+                
+                const turnout = data.totalVoters > 0 ? Math.round((data.totalVotes / data.totalVoters) * 100) : 0;
+                document.getElementById('voterTurnout').textContent = turnout + '%';
+            } catch (error) {
+                console.warn('Dashboard stats not available, using default values:', error.message);
+                // Set default values if API fails
+                document.getElementById('totalVoters').textContent = '1500';
+                document.getElementById('totalVotes').textContent = '1200';
+                document.getElementById('totalCandidates').textContent = '5';
+                document.getElementById('voterTurnout').textContent = '80%';
+                // Show user-friendly error notification
+                if (typeof showNotification === 'function') {
+                    showNotification('Could not load dashboard stats. Please check your connection or try again later.', 'error');
+                } else {
+                    alert('Could not load dashboard stats. Please check your connection or try again later.');
+                }
+            }
+        }
+
+        // Check voting status from Firestore
+        async function checkVotingStatus() {
+            try {
+                const voterId = localStorage.getItem('voterId');
+                if (!voterId) return;
+
+                // Import Firebase modules dynamically
+                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+                const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+
+                // Firebase configuration - Replace with your own Firebase credentials
+                const firebaseConfig = {
+                    apiKey: "YOUR_FIREBASE_API_KEY",
+                    authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+                    projectId: "YOUR_FIREBASE_PROJECT_ID",
+                    storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
+                    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+                    appId: "YOUR_FIREBASE_APP_ID",
+                    measurementId: "YOUR_MEASUREMENT_ID"
+                };
+
+                // Initialize Firebase
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+
+                // Check voting status in Firestore
+                const voterDocRef = doc(db, "voters", voterId);
+                const voterDoc = await getDoc(voterDocRef);
+                
+                if (voterDoc.exists()) {
+                    const voterData = voterDoc.data();
+                    console.log('Firestore voter data:', voterData);
+                    
+                    if (voterData.votingStatus && voterData.votingStatus.hasVoted === true) {
+                        console.log('Voter has already voted according to Firestore');
+                        updateVotingStatus(true, voterData.votingStatus.voteDetails);
+                        return;
+                    }
+                }
+
+                // Fallback to backend API if Firestore doesn't have voting status
+                console.log('No voting status in Firestore, checking backend API');
+                let data;
+                let response;
+                try {
+                    response = await fetch(`http://localhost:3002/votes/status/${voterId}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch voting status from backend');
+                    }
+                    try {
+                        data = await response.json();
+                    } catch (jsonErr) {
+                        throw new Error('Invalid JSON response from backend.');
+                    }
+                    updateVotingStatus(data.hasVoted, data.voteDetails);
+                } catch (error) {
+                    // If API fails, check localStorage for voting status
+                    const hasVoted = localStorage.getItem('hasVoted') === 'true';
+                    updateVotingStatus(hasVoted);
+                    // Show user-friendly error notification
+                    if (typeof showNotification === 'function') {
+                        showNotification('Could not check voting status. Please check your connection or try again later.', 'error');
+                    } else {
+                        alert('Could not check voting status. Please check your connection or try again later.');
+                    }
+                }
+            } catch (error) {
+                console.warn('Voting status check failed:', error.message);
+                // Fallback to localStorage
+                const hasVoted = localStorage.getItem('hasVoted') === 'true';
+                updateVotingStatus(hasVoted);
+                // Show user-friendly error notification
+                if (typeof showNotification === 'function') {
+                    showNotification('Could not check voting status. Please check your connection or try again later.', 'error');
+                } else {
+                    alert('Could not check voting status. Please check your connection or try again later.');
+                }
+            }
+        }
+
+        // Show notification function
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                max-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            
+            // Set background color based on type
+            switch(type) {
+                case 'success':
+                    notification.style.background = '#28a745';
+                    break;
+                case 'error':
+                    notification.style.background = '#dc3545';
+                    break;
+                case 'warning':
+                    notification.style.background = '#ffc107';
+                    notification.style.color = '#212529';
+                    break;
+                default:
+                    notification.style.background = '#17a2b8';
+            }
+            
+            notification.textContent = message;
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Update voting status UI
+        function updateVotingStatus(hasVoted, voteDetails = null) {
+            console.log('Updating voting status UI:', hasVoted, 'Vote details:', voteDetails);
+            
+            const castVoteBtn = document.getElementById('castVoteBtn');
+            const castVoteCard = castVoteBtn.closest('.card');
+            
+            // Status indicators in cast vote card
+            const voteStatusIcon = document.getElementById('voteStatusIcon');
+            const voteStatusText = document.getElementById('voteStatusText');
+            
+            // Voting status card in stats grid
+            const votingStatusIcon = document.getElementById('votingStatusIcon');
+            const votingStatusNumber = document.getElementById('votingStatusNumber');
+            const votingStatusLabel = document.getElementById('votingStatusLabel');
+
+            if (hasVoted) {
+                // Already voted
+                console.log('User has already voted');
+                
+                // Update cast vote card status
+                voteStatusIcon.innerHTML = '<i class="fas fa-check"></i>';
+                voteStatusIcon.style.background = '#28a745';
+                voteStatusText.textContent = 'Vote Cast';
+                
+                // Update voting status card in stats grid
+                votingStatusIcon.innerHTML = '<i class="fas fa-check"></i>';
+                votingStatusIcon.style.background = '#28a745';
+                votingStatusNumber.textContent = 'Voted';
+                votingStatusNumber.style.color = '#28a745';
+                votingStatusLabel.textContent = 'Voting Status';
+                
+                // Disable cast vote button
+                castVoteBtn.style.opacity = '0.6';
+                castVoteBtn.style.pointerEvents = 'none';
+                castVoteBtn.innerHTML = '<i class="fas fa-check"></i> Vote Cast';
+                castVoteBtn.style.background = '#6c757d';
+                castVoteBtn.style.color = 'white';
+                castVoteBtn.style.border = '2px solid #6c757d';
+                castVoteCard.style.border = '2px solid #6c757d';
+                
+                // Show success message without candidate info
+                showNotification('You have already cast your vote!', 'success');
+            } else {
+                // Not voted yet
+                console.log('User has not voted yet');
+                
+                // Update cast vote card status
+                voteStatusIcon.innerHTML = '<i class="fas fa-clock"></i>';
+                voteStatusIcon.style.background = '#ffc107';
+                voteStatusText.textContent = 'Ready to Vote';
+                
+                // Update voting status card in stats grid
+                votingStatusIcon.innerHTML = '<i class="fas fa-clock"></i>';
+                votingStatusIcon.style.background = '#ffc107';
+                votingStatusNumber.textContent = 'Ready';
+                votingStatusNumber.style.color = '#ffc107';
+                votingStatusLabel.textContent = 'Voting Status';
+                
+                // Enable cast vote button
+                castVoteBtn.style.opacity = '1';
+                castVoteBtn.style.pointerEvents = 'auto';
+                castVoteBtn.innerHTML = '<i class="fas fa-arrow-right"></i> Vote Now';
+                castVoteBtn.style.background = '#28a745';
+                castVoteBtn.style.color = 'white';
+                castVoteBtn.style.border = '2px solid #28a745';
+                castVoteCard.style.border = '2px solid #28a745';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            // Clear all localStorage data
+            localStorage.clear();
+            
+            // Clear all sessionStorage data
+            sessionStorage.clear();
+            
+            // Redirect to login page
+            window.location.href = 'voter_login.html';
+        }
+
+        // Mobile sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadDashboardData();
+            checkVotingStatus();
+        });
+    </script>
+</body>
+</html>
