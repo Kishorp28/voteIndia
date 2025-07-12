@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Election Candidates</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --primary: #007bff;
@@ -237,6 +238,9 @@
 
     <div class="container">
         <h1>Admin Dashboard - Election Candidates</h1>
+        <div id="statusIndicator" style="text-align: center; margin-bottom: 1rem; padding: 0.5rem; border-radius: 4px; background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; display: none;">
+            <i class="fas fa-exclamation-triangle"></i> Backend server not available. Using local storage for demo.
+        </div>
         <div class="flex">
             <div class="candidate-form" id="candidateFormContainer"></div>
             <div class="candidate-list" id="candidateListContainer"></div>
@@ -254,8 +258,21 @@
     const API_URL = 'http://localhost:3002/candidates';
     const DEFAULT_AVATAR = 'https://img.freepik.com/premium-vector/male-face-avatar-icon-set-flat-design-social-media-profiles_1281173-3806.jpg?semt=ais_hybrid&w=740';
 
+    // Fallback storage for when backend is not available
+    let localCandidates = JSON.parse(localStorage.getItem('candidates') || '[]');
+
     function fetchCandidates() {
-        return fetch(API_URL).then(res => res.json());
+        return fetch(API_URL)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Backend not available');
+                }
+                return res.json();
+            })
+            .catch(error => {
+                console.warn('Backend not available, using local storage:', error.message);
+                return localCandidates;
+            });
     }
 
     function addCandidate(candidate, file) {
@@ -270,7 +287,26 @@
         return fetch(API_URL, {
             method: 'POST',
             body: formData
-        }).then(res => res.json());
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Backend not available');
+            }
+            return res.json();
+        })
+        .catch(error => {
+            console.warn('Backend not available, using local storage:', error.message);
+            // Add to local storage
+            const newCandidate = {
+                _id: Date.now().toString(),
+                name: candidate.name,
+                party: candidate.party,
+                photo: candidate.photo || DEFAULT_AVATAR
+            };
+            localCandidates.push(newCandidate);
+            localStorage.setItem('candidates', JSON.stringify(localCandidates));
+            return newCandidate;
+        });
     }
 
     function updateCandidate(id, candidate, file) {
@@ -285,11 +321,45 @@
         return fetch(`${API_URL}/${id}`, {
             method: 'PUT',
             body: formData
-        }).then(res => res.json());
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Backend not available');
+            }
+            return res.json();
+        })
+        .catch(error => {
+            console.warn('Backend not available, using local storage:', error.message);
+            // Update in local storage
+            const index = localCandidates.findIndex(c => c._id === id);
+            if (index !== -1) {
+                localCandidates[index] = {
+                    ...localCandidates[index],
+                    name: candidate.name,
+                    party: candidate.party,
+                    photo: candidate.photo || DEFAULT_AVATAR
+                };
+                localStorage.setItem('candidates', JSON.stringify(localCandidates));
+            }
+            return localCandidates[index];
+        });
     }
 
     function deleteCandidate(id) {
-        return fetch(`${API_URL}/${id}`, { method: 'DELETE' }).then(res => res.json());
+        return fetch(`${API_URL}/${id}`, { method: 'DELETE' })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Backend not available');
+            }
+            return res.json();
+        })
+        .catch(error => {
+            console.warn('Backend not available, using local storage:', error.message);
+            // Delete from local storage
+            localCandidates = localCandidates.filter(c => c._id !== id);
+            localStorage.setItem('candidates', JSON.stringify(localCandidates));
+            return { success: true };
+        });
     }
 
     // Candidate Form Component
@@ -400,7 +470,16 @@
 
     // Main render logic
     async function render(editingId = null) {
-        allCandidates = await fetchCandidates();
+        try {
+            allCandidates = await fetchCandidates();
+            // Hide status indicator if backend is working
+            document.getElementById('statusIndicator').style.display = 'none';
+        } catch (error) {
+            console.warn('Using local storage due to backend error:', error);
+            // Show status indicator
+            document.getElementById('statusIndicator').style.display = 'block';
+        }
+        
         let editingCandidate = null;
         if (editingId) {
             editingCandidate = allCandidates.find(c => c._id === editingId);

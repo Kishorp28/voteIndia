@@ -588,42 +588,8 @@
                 const voterId = localStorage.getItem('voterId');
                 if (!voterId) return;
 
-                // Load configuration
-                const firebaseConfig = window.VoteConfig ? window.VoteConfig.getFirebaseConfig() : null;
-                const isFirebaseEnabled = window.VoteConfig ? window.VoteConfig.isFirebaseEnabled() : false;
-                
-                if (isFirebaseEnabled && firebaseConfig) {
-                    try {
-                        // Import Firebase modules dynamically
-                        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-                        const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-
-                        // Initialize Firebase
-                        const app = initializeApp(firebaseConfig);
-                        const db = getFirestore(app);
-
-                        // Check voting status in Firestore
-                        const voterDocRef = doc(db, "voters", voterId);
-                        const voterDoc = await getDoc(voterDocRef);
-                        
-                        if (voterDoc.exists()) {
-                            const voterData = voterDoc.data();
-                            console.log('Firestore voter data:', voterData);
-                            
-                            if (voterData.votingStatus && voterData.votingStatus.hasVoted === true) {
-                                console.log('Voter has already voted according to Firestore');
-                                updateVotingStatus(true, voterData.votingStatus.voteDetails);
-                                return;
-                            }
-                        }
-                        
-                        console.log('No voting status in Firestore, checking backend API');
-                    } catch (error) {
-                        console.warn('Firebase failed, falling back to backend API:', error.message);
-                    }
-                } else {
-                    console.log('Firebase disabled, using backend API for voting status');
-                }
+                // Firebase disabled - using backend API only
+                console.log('Firebase disabled, using backend API for voting status');
                 let data;
                 let response;
                 try {
@@ -815,5 +781,6 @@
         });
     </script>
     <script src="config.js"></script>
+    <!-- Firebase scripts removed - using backend API only -->
 </body>
 </html>

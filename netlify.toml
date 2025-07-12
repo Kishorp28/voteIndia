@@ -12,19 +12,19 @@
   # Environment variables for the frontend
   NODE_ENV = "production"
   
-  # Firebase Configuration (optional - will use defaults if not set)
-  FIREBASE_API_KEY = "AIzaSyDh60ha_x6ZBFdicTb268kkIECHgAWwlME"
-  FIREBASE_AUTH_DOMAIN = "voterc-c70d1.firebaseapp.com"
-  FIREBASE_PROJECT_ID = "voterc-c70d1"
-  FIREBASE_STORAGE_BUCKET = "voterc-c70d1.firebasestorage.app"
-  FIREBASE_MESSAGING_SENDER_ID = "488886767779"
-  FIREBASE_APP_ID = "1:488886767779:web:c7abc68d48eed56d776f16"
-  FIREBASE_MEASUREMENT_ID = "G-1LVLBJ2JWM"
+  # Firebase Configuration (set these in Netlify environment variables)
+  # FIREBASE_API_KEY = "your_firebase_api_key_here"
+  # FIREBASE_AUTH_DOMAIN = "your_firebase_auth_domain_here"
+  # FIREBASE_PROJECT_ID = "your_firebase_project_id_here"
+  # FIREBASE_STORAGE_BUCKET = "your_firebase_storage_bucket_here"
+  # FIREBASE_MESSAGING_SENDER_ID = "your_messaging_sender_id_here"
+  # FIREBASE_APP_ID = "your_firebase_app_id_here"
+  # FIREBASE_MEASUREMENT_ID = "your_measurement_id_here"
   
   # Feature Flags
-  FIREBASE_ENABLED = "true"
-  SMS_ENABLED = "true"
-  ANALYTICS_ENABLED = "true"
+  FIREBASE_ENABLED = "false"
+  SMS_ENABLED = "false"
+  ANALYTICS_ENABLED = "false"
 
 # Redirect rules for SPA-like behavior
 [[redirects]]

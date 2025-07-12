@@ -1,27 +1,27 @@
 // Environment configuration for the voting system
 const config = {
-    // Firebase Configuration
+    // Firebase Configuration - Load from environment variables
     firebase: {
-        apiKey: process.env.FIREBASE_API_KEY || "AIzaSyDh60ha_x6ZBFdicTb268kkIECHgAWwlME",
-        authDomain: process.env.FIREBASE_AUTH_DOMAIN || "voterc-c70d1.firebaseapp.com",
-        projectId: process.env.FIREBASE_PROJECT_ID || "voterc-c70d1",
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || "voterc-c70d1.firebasestorage.app",
-        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || "488886767779",
-        appId: process.env.FIREBASE_APP_ID || "1:488886767779:web:c7abc68d48eed56d776f16",
-        measurementId: process.env.FIREBASE_MEASUREMENT_ID || "G-1LVLBJ2JWM"
+        apiKey: window.FIREBASE_API_KEY || "YOUR_FIREBASE_API_KEY",
+        authDomain: window.FIREBASE_AUTH_DOMAIN || "YOUR_FIREBASE_AUTH_DOMAIN",
+        projectId: window.FIREBASE_PROJECT_ID || "YOUR_FIREBASE_PROJECT_ID",
+        storageBucket: window.FIREBASE_STORAGE_BUCKET || "YOUR_FIREBASE_STORAGE_BUCKET",
+        messagingSenderId: window.FIREBASE_MESSAGING_SENDER_ID || "YOUR_MESSAGING_SENDER_ID",
+        appId: window.FIREBASE_APP_ID || "YOUR_FIREBASE_APP_ID",
+        measurementId: window.FIREBASE_MEASUREMENT_ID || "YOUR_MEASUREMENT_ID"
     },
     
     // Backend API Configuration
     backend: {
-        baseUrl: process.env.BACKEND_URL || "http://localhost:3002",
+        baseUrl: window.BACKEND_URL || "http://localhost:3002",
         timeout: 10000
     },
     
     // Feature Flags
     features: {
-        firebaseEnabled: process.env.FIREBASE_ENABLED !== "false", // enabled by default
-        smsEnabled: process.env.SMS_ENABLED !== "false", // enabled by default
-        analyticsEnabled: process.env.ANALYTICS_ENABLED !== "false" // enabled by default
+        firebaseEnabled: window.FIREBASE_ENABLED !== "false", // enabled by default
+        smsEnabled: window.SMS_ENABLED !== "false", // enabled by default
+        analyticsEnabled: window.ANALYTICS_ENABLED !== "false" // enabled by default
     }
 };
 
@@ -39,6 +39,19 @@ function isFirebaseEnabled() {
 function getBackendUrl() {
     return config.backend.baseUrl;
 }
+
+// Function to update config from environment (for production)
+function updateConfigFromEnvironment() {
+    // Check if we're in a production environment
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        // In production, we can use environment variables if they're injected
+        // For now, we'll use the default config
+        console.log('Running in production environment');
+    }
+}
+
+// Initialize config
+updateConfigFromEnvironment();
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {

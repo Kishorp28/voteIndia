@@ -107,12 +107,41 @@ npm install
 ### 3. Environment setup
 Create a `.env` file in `/back` directory:
 ```env
+# Database Configuration
 MONGODB_URI=your_mongodb_connection_string
-TWILIO_ACCOUNT_SID=your_twilio_sid
-TWILIO_AUTH_TOKEN=your_twilio_token
-TWILIO_PHONE_NUMBER=your_twilio_phone
+# or for MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/votef
+
+# Twilio Configuration (for SMS functionality)
+TWILIO_ACCOUNT_SID=your_twilio_account_sid_here
+TWILIO_AUTH_TOKEN=your_twilio_auth_token_here
+TWILIO_PHONE_NUMBER=+1234567890
+
+# Firebase Configuration (optional)
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_CLIENT_EMAIL=your_firebase_client_email
+FIREBASE_PRIVATE_KEY=your_firebase_private_key
+
+# Server Configuration
 PORT=3002
+NODE_ENV=development
+
+# Security
+JWT_SECRET=your_jwt_secret_here
+SESSION_SECRET=your_session_secret_here
 ```
+
+**For Netlify Deployment:**
+Set these environment variables in your Netlify dashboard:
+- `FIREBASE_API_KEY`
+- `FIREBASE_AUTH_DOMAIN`
+- `FIREBASE_PROJECT_ID`
+- `FIREBASE_STORAGE_BUCKET`
+- `FIREBASE_MESSAGING_SENDER_ID`
+- `FIREBASE_APP_ID`
+- `FIREBASE_MEASUREMENT_ID`
+- `FIREBASE_ENABLED` (set to "false" for demo mode)
+- `SMS_ENABLED` (set to "false" for demo mode)
+- `ANALYTICS_ENABLED` (set to "false" for demo mode)
 
 ### 4. Configure Firebase (Optional)
 If using Firebase Firestore, update the configuration in frontend files.
