@@ -83,18 +83,8 @@
         </div>
     </div>
     <script>
-        // Firebase config - Replace with your own Firebase credentials
-        const firebaseConfig = {
-            apiKey: "YOUR_FIREBASE_API_KEY",
-            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-            projectId: "YOUR_FIREBASE_PROJECT_ID",
-            storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_FIREBASE_APP_ID",
-            measurementId: "YOUR_MEASUREMENT_ID"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        // Firebase disabled in production - using backend API only
+        console.log('Firebase disabled in production - using backend API for voter registration');
 
         // Indian states and cities (sample, add more as needed)
         const stateCityMap = {
@@ -188,12 +178,20 @@
             const voterId = generateVoterID();
             
             try {
-                // Save to Firebase
-                await db.collection('voters').add({
-                    name, aadhaar, mobile, password, state, city, voterId
+                // Save to backend API instead of Firebase
+                const response = await fetch('http://localhost:3002/voters', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name, aadhaar, mobile, password, state, city, voterId
+                    })
                 });
                 
-                console.log('Voter registered successfully in Firebase');
+                if (!response.ok) {
+                    throw new Error('Failed to register voter');
+                }
+                
+                console.log('Voter registered successfully via backend API');
                 
                 // Try to send SMS (but don't fail registration if SMS fails)
                 try {

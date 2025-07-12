@@ -588,42 +588,42 @@
                 const voterId = localStorage.getItem('voterId');
                 if (!voterId) return;
 
-                // Import Firebase modules dynamically
-                const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-                const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-
-                // Firebase configuration - Replace with your own Firebase credentials
-                const firebaseConfig = {
-                    apiKey: "YOUR_FIREBASE_API_KEY",
-                    authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-                    projectId: "YOUR_FIREBASE_PROJECT_ID",
-                    storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
-                    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-                    appId: "YOUR_FIREBASE_APP_ID",
-                    measurementId: "YOUR_MEASUREMENT_ID"
-                };
-
-                // Initialize Firebase
-                const app = initializeApp(firebaseConfig);
-                const db = getFirestore(app);
-
-                // Check voting status in Firestore
-                const voterDocRef = doc(db, "voters", voterId);
-                const voterDoc = await getDoc(voterDocRef);
+                // Load configuration
+                const firebaseConfig = window.VoteConfig ? window.VoteConfig.getFirebaseConfig() : null;
+                const isFirebaseEnabled = window.VoteConfig ? window.VoteConfig.isFirebaseEnabled() : false;
                 
-                if (voterDoc.exists()) {
-                    const voterData = voterDoc.data();
-                    console.log('Firestore voter data:', voterData);
-                    
-                    if (voterData.votingStatus && voterData.votingStatus.hasVoted === true) {
-                        console.log('Voter has already voted according to Firestore');
-                        updateVotingStatus(true, voterData.votingStatus.voteDetails);
-                        return;
-                    }
-                }
+                if (isFirebaseEnabled && firebaseConfig) {
+                    try {
+                        // Import Firebase modules dynamically
+                        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+                        const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
 
-                // Fallback to backend API if Firestore doesn't have voting status
-                console.log('No voting status in Firestore, checking backend API');
+                        // Initialize Firebase
+                        const app = initializeApp(firebaseConfig);
+                        const db = getFirestore(app);
+
+                        // Check voting status in Firestore
+                        const voterDocRef = doc(db, "voters", voterId);
+                        const voterDoc = await getDoc(voterDocRef);
+                        
+                        if (voterDoc.exists()) {
+                            const voterData = voterDoc.data();
+                            console.log('Firestore voter data:', voterData);
+                            
+                            if (voterData.votingStatus && voterData.votingStatus.hasVoted === true) {
+                                console.log('Voter has already voted according to Firestore');
+                                updateVotingStatus(true, voterData.votingStatus.voteDetails);
+                                return;
+                            }
+                        }
+                        
+                        console.log('No voting status in Firestore, checking backend API');
+                    } catch (error) {
+                        console.warn('Firebase failed, falling back to backend API:', error.message);
+                    }
+                } else {
+                    console.log('Firebase disabled, using backend API for voting status');
+                }
                 let data;
                 let response;
                 try {
@@ -814,5 +814,6 @@
             checkVotingStatus();
         });
     </script>
+    <script src="config.js"></script>
 </body>
 </html>

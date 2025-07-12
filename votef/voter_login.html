@@ -69,19 +69,10 @@
         <a href="voter_register.html" class="register-link">Register</a>
     </div>
     <script>
-        // Firebase config - Replace with your own Firebase credentials
-        const firebaseConfig = {
-            apiKey: "YOUR_FIREBASE_API_KEY",
-            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-            projectId: "YOUR_FIREBASE_PROJECT_ID",
-            storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_FIREBASE_APP_ID",
-            measurementId: "YOUR_MEASUREMENT_ID"
-        };
+        // Firebase disabled in production - using backend API only
+        console.log('Firebase disabled in production - using backend API for voter login');
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        // Firebase disabled - using backend API only
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -89,17 +80,22 @@
             const password = document.getElementById('password').value;
             const loginMessage = document.getElementById('loginMessage');
             loginMessage.textContent = '';
+            
             try {
-                const querySnapshot = await db.collection('voters').where('voterId', '==', voterId).limit(1).get();
-                if (querySnapshot.empty) {
+                // Use backend API for authentication
+                const response = await fetch('http://localhost:3002/voters/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ voterId, password })
+                });
+                
+                if (!response.ok) {
                     loginMessage.textContent = 'Invalid Voter ID or Password.';
                     return;
                 }
-                const voterData = querySnapshot.docs[0].data();
-                if (voterData.password !== password) {
-                    loginMessage.textContent = 'Invalid Voter ID or Password.';
-                    return;
-                }
+                
+                const voterData = await response.json();
+                
                 // Success: Save Voter ID to localStorage and redirect
                 localStorage.setItem('voterId', voterId);
                 localStorage.setItem('currentUser', JSON.stringify({
@@ -110,6 +106,7 @@
                 }));
                 window.location.href = 'dashboard.html';
             } catch (err) {
+                console.error('Login error:', err);
                 loginMessage.textContent = 'Error logging in. Please try again.';
             }
         });
